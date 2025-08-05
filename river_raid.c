@@ -1,37 +1,40 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
-#include <conio.h>
-#include <windows.h>
+#include <time.h>       //geração de números aleatórios
+#include <conio.h>      //leitura de teclas
+#include <windows.h>    //manipulação do console (cores, cursor, etc)
 
-#define ALTURA 20
+//PARÂMETROS DO JOGO
+#define ALTURA 20       //dimensões do campo (20x50)
 #define LARGURA 50
 #define NAVE_CHAR 'A'
 #define TIRO_CHAR '^'
 #define OBSTACULO_CHAR '#'
-#define INIMIGO_CHAR 'W'
+#define INIMIGO_CHAR 'E'
 #define COMBUSTIVEL_CHAR 'F'
 #define VAZIO_CHAR ' '
 
-#define MAX_TIROS 5
-#define MAX_OBJETOS 20
-#define DELAY 100
+#define MAX_TIROS 5     //limites de tiros
+#define MAX_OBJETOS 20  //objetos simultâneos na tela
+#define DELAY 100       //velocidade do jogo (em ms por frame)
 
+//ESTRUTURA DE DADOS
 typedef struct {
     int x, y;
     int ativo;
-} Tiro;
+} Tiro; //representa cada tiro disparado
 
 typedef struct {
     int x, y;
     int tipo; // 0 = obstáculo, 1 = inimigo, 2 = combustível
     int ativo;
-} Objeto;
+} Objeto; //pode ser um obstáculo, inimigo ou combustível
 
 typedef struct {
     int x, y;
-} Nave;
+} Nave; //posição da nave
 
+//VARIÁVEIS GLOBAIS - controlamo o estado geral do jogo
 Nave nave;
 Tiro tiros[MAX_TIROS];
 Objeto objetos[MAX_OBJETOS];
@@ -40,18 +43,21 @@ int score = 0;
 int game_over = 0;
 int combustivel = 100;
 
+//VARIÁVEIS PARA DESENHAR DIRETAMENTE NO CONSOLE DO WINDOWS
+//COM MANIPULAÇÃO DE BUFFER - evitar flickering
 HANDLE hConsole;
 CHAR_INFO consoleBuffer[LARGURA * ALTURA];
 COORD bufferSize = {LARGURA, ALTURA};
 COORD characterPos = {0, 0};
 SMALL_RECT consoleWriteArea = {0, 0, LARGURA - 1, ALTURA - 1};
 
+//FUNÇÃO CHAMADA PARA INICIAR / REINICIAR O JOGO
 void reset() {
-    nave.x = LARGURA / 2;
+    nave.x = LARGURA / 2;   //Centraliza a nave
     nave.y = ALTURA - 2;
-    score = 0;
-    combustivel = 100;
-    game_over = 0;
+    score = 0;              //zera pontuação
+    combustivel = 100;      //recarrega combustível
+    game_over = 0;          //desativa todos os tiros e objetos
 
     for (int i = 0; i < MAX_TIROS; i++) {
         tiros[i].ativo = 0;
@@ -62,6 +68,12 @@ void reset() {
     }
 }
 
+//FUNÇÃO RESPONSÁVEL POR CRIAR NOVOS OBJETOS ALEATÓRIOS
+//NA PARTE SUPERIOR DA TELA COM BASE EM PROBABILIDADE
+//60% de chance de ser obstáculo
+//30% de ser inimigo
+//10% de ser combustível.
+//jogo mais dinâmico, desafios e oportunidades aleatórias
 void spawn_objetos() {
     for (int i = 0; i < MAX_OBJETOS; i++) {
         if (!objetos[i].ativo && rand() % 20 == 0) {
@@ -79,6 +91,8 @@ void spawn_objetos() {
     }
 }
 
+//FUNÇÃO QUE MOVE OS TIROS PARA CIMA
+//se saírem da tela (y < 0), são desativados
 void atualiza_tiros() {
     for (int i = 0; i < MAX_TIROS; i++) {
         if (tiros[i].ativo) {
@@ -90,6 +104,8 @@ void atualiza_tiros() {
     }
 }
 
+//FUNÇÃO QUE MOVE OS OBJETOS PARA BAIXO
+//se saírem da tela, são desativados
 void atualiza_objetos() {
     for (int i = 0; i < MAX_OBJETOS; i++) {
         if (objetos[i].ativo) {
@@ -101,6 +117,13 @@ void atualiza_objetos() {
     }
 }
 
+//FUNÇÃO RESPONSÁVEL POR VERIFICAR COLISÕES
+//Verifica duas coisas:
+//Colisão com a nave:
+    //Obstáculo ou inimigo = fim de jogo.
+    //Combustível = recarrega.
+//Colisão com tiros:
+    //Se tiro acerta um inimigo, ambos são desativados e o jogador ganha pontos.
 void verificar_colisoes() {
     for (int i = 0; i < MAX_OBJETOS; i++) {
         if (!objetos[i].ativo) continue;
@@ -128,6 +151,11 @@ void verificar_colisoes() {
     }
 }
 
+//FUNÇÃO QUE PERMITE CONTROLE EM TEMPO REAL DA NAVE
+//Lê as teclas pressionadas:
+    //← e →: movimentam a nave
+    //Espaço: atira
+    //R: reinicia (após morte)
 void comandos() {
     if (GetAsyncKeyState(VK_LEFT) & 0x8000 && nave.x > 1) {
         nave.x--;
@@ -150,6 +178,10 @@ void comandos() {
     }
 }
 
+//FUNÇÃO QUE RENDERIZA O ESTADO ATUAL DO JOGO NO CONSOLE:
+    //Limpa o buffer.
+    //Desenha nave, tiros, objetos.
+    //Escreve a pontuação e combustível.
 void desenha_tela() {
     for (int i = 0; i < LARGURA * ALTURA; ++i) {
         consoleBuffer[i].Char.AsciiChar = VAZIO_CHAR;
@@ -193,6 +225,17 @@ void desenha_tela() {
     }
 }
 
+//FUNÇÃO PRINCIPAL
+//Loop principal:
+    //Se o jogo ainda não acabou:
+        //Gasta combustível
+        //Gera novos objetos
+        //Atualiza movimento de tiros e objetos
+        //verifica colisões
+    //Sempre:
+        //desenha tela
+        //lê comandos do jogador
+        //espera 100 ms (delay).
 int main() {
     srand(time(NULL));
     hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -208,8 +251,8 @@ int main() {
 
             spawn_objetos();
             atualiza_tiros();
-            atualiza_objetos();
-            verificar_colisoes();
+            atualiza_objetos();     
+                   verificar_colisoes();
         }
 
         desenha_tela();
@@ -218,4 +261,4 @@ int main() {
     }
 
     return 0;
-} 
+}
