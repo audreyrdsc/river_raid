@@ -1,0 +1,31 @@
+# Arquivos gerados pelo compilador
+*.o
+*.obj
+*.a
+*.lib
+*.out
+*.exe
+
+# Arquivos de log
+*.log
+*.tmp
+*.bak
+
+# Arquivos de configuração do sistema
+*.conf
+*.cfg
+*.ini
+*.sh
+
+# Pastas
+.vscode
+/Aulas
+Tipos-flutuantes.c
+../Desafio-01/Desafios 01 - Programa\303\247\303\243o 01.docx
+/Projeto_River_Raid
+
+
+# Outros arquivos que você possa querer ignorar
+# *.swp (arquivos de troca do editor)
+# ~/.vimrc (configuração do editor Vim)
+# ~/.emacs.d (configuração do editor Emacs)
