@@ -1,8 +1,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>       //geração de números aleatórios
-#include <conio.h>      //leitura de teclas
-#include <windows.h>    //manipulação do console (cores, cursor, etc)
+
+#ifdef _WIN32
+    #include <conio.h>      //leitura de teclas (Windows)
+    #include <windows.h>    //manipulação do console (Windows)
+#else
+    #include <ncurses.h>    //manipulação do console (Linux)
+    #include <unistd.h>     //funções POSIX (Linux)
+#endif
+
+// Funções de abstração para leitura de teclado e manipulação de console
+// Implementações separadas para Windows e Linux serão adicionadas abaixo
 
 //PARÂMETROS DO JOGO
 #define ALTURA 20       //dimensões do campo (20x50)
@@ -43,13 +52,14 @@ int score = 0;
 int game_over = 0;
 int combustivel = 100;
 
+#ifdef _WIN32
 //VARIÁVEIS PARA DESENHAR DIRETAMENTE NO CONSOLE DO WINDOWS
-//COM MANIPULAÇÃO DE BUFFER - evitar flickering
 HANDLE hConsole;
 CHAR_INFO consoleBuffer[LARGURA * ALTURA];
 COORD bufferSize = {LARGURA, ALTURA};
 COORD characterPos = {0, 0};
 SMALL_RECT consoleWriteArea = {0, 0, LARGURA - 1, ALTURA - 1};
+#endif
 
 //FUNÇÃO CHAMADA PARA INICIAR / REINICIAR O JOGO
 void reset() {
@@ -157,6 +167,7 @@ void verificar_colisoes() {
     //Espaço: atira
     //R: reinicia (após morte)
 void comandos() {
+#ifdef _WIN32
     if (GetAsyncKeyState(VK_LEFT) & 0x8000 && nave.x > 1) {
         nave.x--;
     }
@@ -176,6 +187,28 @@ void comandos() {
     if (game_over && GetAsyncKeyState(0x52) & 0x8000) { // R
         reset();
     }
+#else
+    int ch = getch();
+    if (ch == KEY_LEFT && nave.x > 1) {
+        nave.x--;
+    }
+    if (ch == KEY_RIGHT && nave.x < LARGURA - 2) {
+        nave.x++;
+    }
+    if (ch == ' ') {
+        for (int i = 0; i < MAX_TIROS; i++) {
+            if (!tiros[i].ativo) {
+                tiros[i].x = nave.x;
+                tiros[i].y = nave.y - 1;
+                tiros[i].ativo = 1;
+                break;
+            }
+        }
+    }
+    if (game_over && (ch == 'r' || ch == 'R')) {
+        reset();
+    }
+#endif
 }
 
 //FUNÇÃO QUE RENDERIZA O ESTADO ATUAL DO JOGO NO CONSOLE:
@@ -183,6 +216,7 @@ void comandos() {
     //Desenha nave, tiros, objetos.
     //Escreve a pontuação e combustível.
 void desenha_tela() {
+#ifdef _WIN32
     for (int i = 0; i < LARGURA * ALTURA; ++i) {
         consoleBuffer[i].Char.AsciiChar = VAZIO_CHAR;
         consoleBuffer[i].Attributes = FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_RED;
@@ -223,6 +257,34 @@ void desenha_tela() {
         else
             printf("Você colidiu! Aperte R para reiniciar.\n");
     }
+#else
+    clear();
+    // Nave
+    mvaddch(nave.y, nave.x, NAVE_CHAR);
+    // Tiros
+    for (int i = 0; i < MAX_TIROS; i++) {
+        if (tiros[i].ativo)
+            mvaddch(tiros[i].y, tiros[i].x, TIRO_CHAR);
+    }
+    // Objetos
+    for (int i = 0; i < MAX_OBJETOS; i++) {
+        if (objetos[i].ativo) {
+            char c;
+            if (objetos[i].tipo == 0) c = OBSTACULO_CHAR;
+            else if (objetos[i].tipo == 1) c = INIMIGO_CHAR;
+            else c = COMBUSTIVEL_CHAR;
+            mvaddch(objetos[i].y, objetos[i].x, c);
+        }
+    }
+    mvprintw(ALTURA, 0, "Score: %d | Combustível: %d", score, combustivel);
+    if (game_over) {
+        if (combustivel <= 0)
+            mvprintw(ALTURA + 1, 0, "Acabou o combustível! Aperte R para reiniciar.");
+        else
+            mvprintw(ALTURA + 1, 0, "Você colidiu! Aperte R para reiniciar.");
+    }
+    refresh();
+#endif
 }
 
 //FUNÇÃO PRINCIPAL
@@ -237,8 +299,17 @@ void desenha_tela() {
         //lê comandos do jogador
         //espera 100 ms (delay).
 int main() {
+#ifdef __linux__
+    initscr();
+    noecho();
+    curs_set(FALSE);
+    keypad(stdscr, TRUE);
+    nodelay(stdscr, TRUE);
+#endif
     srand(time(NULL));
+#ifdef _WIN32
     hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+#endif
     reset();
 
     while (1) {
@@ -251,14 +322,21 @@ int main() {
 
             spawn_objetos();
             atualiza_tiros();
-            atualiza_objetos();     
-                   verificar_colisoes();
+            atualiza_objetos();
+            verificar_colisoes();
         }
 
         desenha_tela();
         comandos();
+#ifdef _WIN32
         Sleep(DELAY);
+#else
+        usleep(DELAY * 1000);
+#endif
     }
 
+#ifdef __linux__
+    endwin();
+#endif
     return 0;
 }
