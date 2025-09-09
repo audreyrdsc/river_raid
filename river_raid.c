@@ -1,8 +1,8 @@
 
 //1 - INCLUSÃO DAS BIBLIOTECAS
 #include <stdio.h>          //entrada e saída padrão
-#include <stdlib.h>         //funções gerais
-#include <time.h>           //geração de números aleatórios diferentes a cada execução
+#include <stdlib.h>         //funções gerais, gerenciamento de memória, processos, números aleatórios
+#include <time.h>           //medição de tempo atual e decorrido
 
 //Compilação condicional - bibliotecas específicas conforme o Sistema Operacional
 #ifdef _WIN32   
@@ -10,7 +10,7 @@
     #include <windows.h>    //manipulação do console (Windows)
 #else           //Se Linux
     #include <ncurses.h>    //manipulação do console (Linux)
-    #include <unistd.h>     //funções POSIX (Linux)
+    #include <unistd.h>     //funções POSIX (Linux), I/O, manipulação de arquivos, controle do sistema
 #endif
 
 // Funções de abstração para leitura de teclado e manipulação de console
@@ -27,7 +27,7 @@
 #define COMBUSTIVEL_CHAR 'F'    //Caracteres no console para representar combustível
 #define VAZIO_CHAR ' '
 
-#define MAX_TIROS 5     //limites de tiros
+#define MAX_TIROS 5     //limites de tiros na tela
 #define MAX_OBJETOS 20  //objetos simultâneos na tela (inimigos/obstáculos/combustíveis)
 #define DELAY 100       //velocidade do jogo, pausa entre atualizações (100ms → 10 frames por segundo)
 
@@ -38,7 +38,7 @@ typedef struct {
     int ativo;  //1 se existe, 0 se não existe
 } Tiro;         //representa cada tiro disparado
 
-//Representa qualquer objeto
+//Representa qualquer dos 3 objetos
 typedef struct {
     int x, y;
     int tipo;   // 0 → obstáculo, 1 → inimigo, 2 → combustível
