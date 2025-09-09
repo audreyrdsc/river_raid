@@ -261,13 +261,13 @@ void desenha_tela() {
     WriteConsoleOutputA(hConsole, consoleBuffer, bufferSize, characterPos, &consoleWriteArea);
     //Move o cursor do console para baixo da tela e imprime o placar e o combustível restante
     SetConsoleCursorPosition(hConsole, (COORD){0, ALTURA});
-    printf("Score: %d | Combustível: %d\n", score, combustivel);
+    printf("Score: %d | Combustivel: %d\n", score, combustivel);
 
     if (game_over) {    //Se o jogo terminou - Mostra mensagem diferente se foi colisão ou falta de combustível
         if (combustivel <= 0)
-            printf("Acabou o combustível! Aperte R para reiniciar.\n");
+            printf("Acabou o combustivel! Aperte R para reiniciar.\n");
         else
-            printf("Você colidiu! Aperte R para reiniciar.\n");
+            printf("Voce colidiu! Aperte R para reiniciar.\n");
     }
 #else
     clear();    //Limpa toda a tela
@@ -289,11 +289,11 @@ void desenha_tela() {
         }
     }
     //Mostra os valores na linha abaixo da tela do jogo (placar e combustível)
-    mvprintw(ALTURA, 0, "Score: %d | Combustível: %d", score, combustivel);
+    mvprintw(ALTURA, 0, "Score: %d | Combustivel: %d", score, combustivel);
     //Mensagem final em caso de game over
     if (game_over) {
         if (combustivel <= 0)
-            mvprintw(ALTURA + 1, 0, "Acabou o combustível! Aperte R para reiniciar.");
+            mvprintw(ALTURA + 1, 0, "Acabou o combustivel! Aperte R para reiniciar.");
         else
             mvprintw(ALTURA + 1, 0, "Você colidiu! Aperte R para reiniciar.");
     }
