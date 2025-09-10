@@ -187,14 +187,14 @@ void desenha_tela() {
         }
     }
 
-    // Desenha a nave
+    // Desenha a nave - Cor amarela
     int idx_nave = nave.y * LARGURA + nave.x;
     if (idx_nave >= 0 && idx_nave < LARGURA * ALTURA) {
         consoleBuffer[idx_nave].Char.AsciiChar = NAVE_CHAR;
-        consoleBuffer[idx_nave].Attributes = FOREGROUND_RED | BACKGROUND_BLUE;
+        consoleBuffer[idx_nave].Attributes = FOREGROUND_RED | FOREGROUND_GREEN | BACKGROUND_BLUE;
     }
 
-    // Desenha os tiros
+    // Desenha os tiros - Cor amarela
     for (int i = 0; i < MAX_TIROS; i++) {
         if (tiros[i].ativo) {
             int idx = tiros[i].y * LARGURA + tiros[i].x;
@@ -212,15 +212,15 @@ void desenha_tela() {
             if (idx >= 0 && idx < LARGURA * ALTURA) {
                 char c;
                 WORD cor;
-                if (objetos[i].tipo == 0) {
+                if (objetos[i].tipo == 0) { // Obstáculo - Cor Verde
                     c = OBSTACULO_CHAR;
-                    cor = FOREGROUND_RED | BACKGROUND_BLUE;
-                } else if (objetos[i].tipo == 1) {
-                    c = INIMIGO_CHAR;
-                    cor = FOREGROUND_RED | FOREGROUND_BLUE | BACKGROUND_BLUE;
-                } else {
-                    c = COMBUSTIVEL_CHAR;
                     cor = FOREGROUND_GREEN | BACKGROUND_BLUE;
+                } else if (objetos[i].tipo == 1) { // Inimigo - Cor Vermelha
+                    c = INIMIGO_CHAR;
+                    cor = FOREGROUND_RED | BACKGROUND_BLUE;
+                } else { // Combustível - Cor Branca
+                    c = COMBUSTIVEL_CHAR;
+                    cor = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | BACKGROUND_BLUE;
                 }
                 consoleBuffer[idx].Char.AsciiChar = c;
                 consoleBuffer[idx].Attributes = cor;
@@ -240,11 +240,11 @@ void desenha_tela() {
     start_color();
     init_pair(1, COLOR_WHITE, COLOR_BLUE);   // rio
     init_pair(2, COLOR_BLACK, COLOR_GREEN);  // margem
-    init_pair(3, COLOR_RED, COLOR_BLUE);     // nave
-    init_pair(4, COLOR_YELLOW, COLOR_BLUE);  // tiro
-    init_pair(5, COLOR_RED, COLOR_BLUE);     // obstáculo
-    init_pair(6, COLOR_MAGENTA, COLOR_BLUE); // inimigo
-    init_pair(7, COLOR_GREEN, COLOR_BLUE);   // combustível
+    init_pair(3, COLOR_YELLOW, COLOR_BLUE);  // nave - amarela
+    init_pair(4, COLOR_YELLOW, COLOR_BLUE);  // tiro - amarelo
+    init_pair(5, COLOR_GREEN, COLOR_BLUE);   // obstáculo - verde
+    init_pair(6, COLOR_RED, COLOR_BLUE);     // inimigo - vermelho
+    init_pair(7, COLOR_WHITE, COLOR_BLUE);   // combustível - branco
 
     for (int y = 0; y < ALTURA; y++) {
         for (int x = 0; x < LARGURA; x++) {
@@ -305,6 +305,11 @@ int main() {
     reset();
 
     while (1) {
+        // CORREÇÃO: Garante que o combustível nunca ultrapasse 100
+        if (combustivel > 100) {
+            combustivel = 100;
+        }
+
         if (!game_over) {
             combustivel--;
             if (combustivel <= 0) { combustivel = 0; game_over = 1; }
