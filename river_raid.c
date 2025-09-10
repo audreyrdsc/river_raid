@@ -131,8 +131,16 @@ void verificar_colisoes() {
         for (int j = 0; j < MAX_TIROS; j++) {
             if (tiros[j].ativo && tiros[j].x == objetos[i].x && tiros[j].y == objetos[i].y) {
                 tiros[j].ativo = 0;
-                objetos[i].ativo = 0;
-                if (objetos[i].tipo == 1) score += 10;
+                
+                if (objetos[i].tipo == 2) { //Testa se atirou em combustível
+                    objetos[i].ativo = 1;   //mantêm o combustível ativo para adicionar 
+                } else if (objetos[i].tipo == 0) {
+                    objetos[i].ativo = 1;   //mantem o obstáculo (#) ativo - não destrói
+                } else {
+                    objetos[i].ativo = 0;   //o tiro destrói o Inimigo (E)
+                }
+                
+                if (objetos[i].tipo == 1) score += 10;  //Acrescenta 10 pontos
             }
         }
     }
@@ -213,15 +221,15 @@ void desenha_tela() {
             if (idx >= 0 && idx < LARGURA * ALTURA) {
                 char c;
                 WORD cor;
-                if (objetos[i].tipo == 0) { // Obstáculo - Cor Verde
+                if (objetos[i].tipo == 0) { // Obstáculo - Cor Verde com fundo Magenta
                     c = OBSTACULO_CHAR;
-                    cor = FOREGROUND_GREEN | BACKGROUND_BLUE;
+                    cor = FOREGROUND_GREEN | BACKGROUND_RED | BACKGROUND_BLUE | BACKGROUND_INTENSITY;
                 } else if (objetos[i].tipo == 1) { // Inimigo - Cor Vermelha
                     c = INIMIGO_CHAR;
                     cor = FOREGROUND_RED | BACKGROUND_BLUE;
                 } else { // Combustível - Cor Branca
                     c = COMBUSTIVEL_CHAR;
-                    cor = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | BACKGROUND_BLUE;
+                    cor = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY | BACKGROUND_BLUE;
                 }
                 consoleBuffer[idx].Char.AsciiChar = c;
                 consoleBuffer[idx].Attributes = cor;
