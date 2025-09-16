@@ -77,29 +77,43 @@ void som_colisao_nave() {
 
 void som_destroi_inimigo() {
     #ifdef _WIN32
-        Beep(1200, 150);  // som ao acertar inimigo
+        Beep(1200, 100);  // som ao acertar inimigo
+        Beep(1200, 100);
     #else
-        printf("\a"); fflush(stdout);
+        system("beep -f 1200 -l 100");
+        system("beep -f 1200 -l 100");
     #endif
 }    
 
 void som_tiro() {
     #ifdef _WIN32
-        Beep(750, 100);  // som de tiro
+        Beep(650, 100);  // som de tiro
     #else
-        system("beep -f 750 -l 100");   // som ao atirar
+        system("beep -f 650 -l 100");   // som ao atirar
+    #endif
+}
+
+void som_pega_combustivel() {
+    #ifdef _WIN32
+        Beep(600, 100);
+        Beep(800, 100);
+        Beep(1000, 120);
+    #else
+        system("beep -f 600 -l 100");
+        system("beep -f 800 -l 100");
+        system("beep -f 1000 -l 120");
     #endif
 }
 
 void som_game_over() {
     #ifdef _WIN32
-        Beep(880, 200); // Lá5
-        Beep(698, 200); // Fá5
-        Beep(523, 400); // Dó5
+        Beep(880, 100); // Lá5
+        Beep(698, 100); // Fá5
+        Beep(523, 200); // Dó5
     #else
-        system("beep -f 523 -l 200"); // Dó
-        system("beep -f 494 -l 200"); // Si
-        system("beep -f 440 -l 400"); // Lá
+        system("beep -f 523 -l 100"); // Dó
+        system("beep -f 494 -l 100"); // Si
+        system("beep -f 440 -l 200"); // Lá
     #endif
 }
 
@@ -163,6 +177,7 @@ void verificar_colisoes() {
                 som_game_over();
                 game_over = 1;
             } else if (objetos[i].tipo == 2) {
+                som_pega_combustivel(); //////////////////////////////////////////////////////////////////////
                 combustivel += 30;
                 if (combustivel > 100) combustivel = 100;
                 objetos[i].ativo = 0;
