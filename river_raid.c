@@ -65,6 +65,45 @@ COORD characterPos = {0, 0};
 SMALL_RECT consoleWriteArea = {0, 0, LARGURA - 1, ALTURA - 1};
 #endif
 
+void som_colisao_nave() {
+    #ifdef _WIN32
+        Beep(300, 100); //Som de colisão com obstáculo
+        Beep(150, 120);
+    #else
+        system("beep -f 300 -l 100");
+        system("beep -f 150 -l 120");
+    #endif
+}
+
+void som_destroi_inimigo() {
+    #ifdef _WIN32
+        Beep(1200, 150);  // som ao acertar inimigo
+    #else
+        printf("\a"); fflush(stdout);
+    #endif
+}    
+
+void som_tiro() {
+    #ifdef _WIN32
+        Beep(750, 100);  // som de tiro
+    #else
+        system("beep -f 750 -l 100");   // som ao atirar
+    #endif
+}
+
+void som_game_over() {
+    #ifdef _WIN32
+        Beep(880, 200); // Lá5
+        Beep(698, 200); // Fá5
+        Beep(523, 400); // Dó5
+    #else
+        system("beep -f 523 -l 200"); // Dó
+        system("beep -f 494 -l 200"); // Si
+        system("beep -f 440 -l 400"); // Lá
+    #endif
+}
+
+
 //6 - FUNÇÃO PARA INICIAR / REINICIAR O JOGO
 void reset() {
     nave.x = (RIO_INICIO + RIO_FIM) / 2; // Inicia a nave no centro do rio
@@ -119,7 +158,9 @@ void verificar_colisoes() {
         if (!objetos[i].ativo) continue;
 
         if (objetos[i].x == nave.x && objetos[i].y == nave.y) {
-            if (objetos[i].tipo == 0 || objetos[i].tipo == 1) {
+            if (objetos[i].tipo == 0 || objetos[i].tipo == 1) {            
+                som_colisao_nave();
+                som_game_over();
                 game_over = 1;
             } else if (objetos[i].tipo == 2) {
                 combustivel += 30;
@@ -133,14 +174,18 @@ void verificar_colisoes() {
                 tiros[j].ativo = 0;
                 
                 if (objetos[i].tipo == 2) { //Testa se atirou em combustível
-                    objetos[i].ativo = 1;   //mantêm o combustível ativo para adicionar 
+                    objetos[i].ativo = 1;   //mantêm o combustível ativo para capturar 
                 } else if (objetos[i].tipo == 0) {
                     objetos[i].ativo = 1;   //mantem o obstáculo (#) ativo - não destrói
                 } else {
                     objetos[i].ativo = 0;   //o tiro destrói o Inimigo (E)
                 }
-                
-                if (objetos[i].tipo == 1) score += 10;  //Acrescenta 10 pontos
+              
+                if (objetos[i].tipo == 1) {
+                    score += 10;
+                    som_destroi_inimigo();
+                }
+              
             }
         }
     }
@@ -157,6 +202,7 @@ void comandos() {
                 tiros[i].x = nave.x;
                 tiros[i].y = nave.y - 1;
                 tiros[i].ativo = 1;
+                som_tiro();
                 break;
             }
         }
@@ -317,7 +363,7 @@ int main() {
         // CORREÇÃO: Garante que o combustível nunca ultrapasse 100
         if (combustivel > 100) {
             combustivel = 100;
-        }
+        }      
 
         if (!game_over) {
             combustivel--;
