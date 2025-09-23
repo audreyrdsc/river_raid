@@ -65,6 +65,23 @@ COORD characterPos = {0, 0};
 SMALL_RECT consoleWriteArea = {0, 0, LARGURA - 1, ALTURA - 1};
 #endif
 
+void musica_inicio() {
+    #ifdef _WIN32
+        Beep(770, 200); 
+        Beep(260, 300); 
+        Beep(260, 300); 
+        Beep(260, 400); 
+        Sleep(200);     
+    #else
+        system("beep -f 770 -l 200");
+        system("beep -f 260 -l 300");
+        system("beep -f 260 -l 300");
+        system("beep -f 260 -l 400");
+        usleep(200000);    
+    #endif
+
+}
+
 void som_colisao_nave() {
     #ifdef _WIN32
         Beep(300, 100); //Som de colisão com obstáculo
@@ -128,6 +145,8 @@ void reset() {
 
     for (int i = 0; i < MAX_TIROS; i++) tiros[i].ativo = 0;
     for (int i = 0; i < MAX_OBJETOS; i++) objetos[i].ativo = 0;
+
+    musica_inicio(); //música de início do jogo
 }
 
 //7 - CRIA NOVOS OBJETOS
